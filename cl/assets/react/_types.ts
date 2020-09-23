@@ -7,6 +7,7 @@ export interface Tag {
   dockets: number[];
   view_count: number;
   assocId?: number;
+  description: string;
 }
 export interface Association {
   id: number;
