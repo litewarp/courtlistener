@@ -3,7 +3,7 @@ import { queryCache, useMutation, usePaginatedQuery } from 'react-query';
 import TagListInner from './TagListInner';
 import { appFetch } from './_fetch';
 import { Tag, UserState } from './_types';
-import TagEditModal, { useModal } from './TagModals';
+import { TagDeleteModal, TagEditModal, useModal } from './TagModals';
 
 const TagList: React.FC<UserState> = ({ userId, userName, isPageOwner }) => {
   const [page, setPage] = React.useState(1);
@@ -24,6 +24,9 @@ const TagList: React.FC<UserState> = ({ userId, userName, isPageOwner }) => {
   const [show, setShow] = useState(false);
   const [modalTag, setModalTag] = useState('');
   const handleShow = useModal(modalTag, setModalTag, setShow);
+  const [showDelete, setShowDelete] = useState(false);
+  const [modalDeleteTag, setModalDeleteTag] = useState('');
+  const handleDeleteShow = useModal(modalDeleteTag, setModalDeleteTag, setShowDelete);
 
   return (
     <>
@@ -44,6 +47,7 @@ const TagList: React.FC<UserState> = ({ userId, userName, isPageOwner }) => {
             userName={userName}
             isPageOwner={isPageOwner}
             onEditTagClick={handleShow}
+            onDeleteTagClick={handleDeleteShow}
           />
         )}
       </div>
@@ -100,6 +104,14 @@ const TagList: React.FC<UserState> = ({ userId, userName, isPageOwner }) => {
         </div>
       )}
       <TagEditModal tag={modalTag} setTag={setModalTag} userId={userId} show={show} setShow={setShow} page={page} />
+      <TagDeleteModal
+        tag={modalDeleteTag}
+        setTag={setModalDeleteTag}
+        show={showDelete}
+        setShow={setShowDelete}
+        userId={userId}
+        page={page}
+      />
     </>
   );
 };
