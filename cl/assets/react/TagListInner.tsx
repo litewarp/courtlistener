@@ -38,12 +38,7 @@ const TagListInner: React.FC<TagListInnerProps> = ({ data, isPageOwner, userName
                   <>
                     <td>{tag.published ? 'Yes' : 'No'}</td>
                     <td className="text-right">
-                      <a
-                        className="btn btn-primary btn-sm inline"
-                        data-id={tag.id}
-                        // XXX THIS IS REALLY NOT GOING TO WORK...
-                        onClick={() => onEditTagClick(tag)}
-                      >
+                      <a className="btn btn-primary btn-sm inline" data-id={tag.id} onClick={() => onEditTagClick(tag)}>
                         <i className="fa fa-pencil" />
                         &nbsp;Edit / Delete
                       </a>
