@@ -29,7 +29,7 @@ export function useModal(tag: Tag, setModalTag: any, setShow: any) {
   return handleShow;
 }
 
-const TagEditModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow, userId, page }) => {
+export const TagEditModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow, userId, page }) => {
   const putTag = React.useCallback(
     async (tag: Tag) =>
       await appFetch(`/api/rest/v3/tags/${tag.id}/`, {
@@ -193,4 +193,53 @@ const TagEditModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow, userId
   );
 };
 
-export default TagEditModal;
+export const TagDeleteModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow, userId, page }) => {
+  const deleteTag = React.useCallback(
+    async (tag: Tag) =>
+      await appFetch(`/api/rest/v3/tags/${tag.id}/`, {
+        method: 'DELETE',
+      }),
+    [tag]
+  );
+
+  const handleClose = () => {
+    setShow(false);
+  };
+
+  const onSubmit = () => {
+    console.log(`Got request to delete tag.`, tag);
+    removeTag(tag);
+    handleClose();
+  };
+
+  const [removeTag] = useMutation(deleteTag, {
+    onSuccess: (data, variables) => {
+      queryCache.setQueryData(['tags', page], (old: any) => {
+        console.log('DEBUG: ', data, old);
+        // A list of the old items but with the item removed from it
+        return {
+          ...old,
+          results: old.results.filter((oldItem: Tag) => oldItem.id !== tag.id),
+        };
+      });
+    },
+  });
+
+  return (
+    <Modal show={show} onHide={handleClose} animation={false}>
+      <Modal.Header closeButton>
+        <Modal.Title componentClass="h2">Delete this Tag?</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <p>
+          Deleting this tag removes all items from its collection and removes the URL from our system. There is no undo.
+        </p>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button onClick={onSubmit} bsStyle="danger" bsSize="large">
+          <i className="fa fa-trash-o"></i>&nbsp;Delete Now
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+};
