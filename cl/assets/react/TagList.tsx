@@ -5,13 +5,13 @@ import { appFetch } from './_fetch';
 import { Tag, UserState } from './_types';
 import { TagDeleteModal, TagEditModal, useModal } from './TagModals';
 
-const TagList: React.FC<UserState> = ({ userId, userName, isPageOwner }) => {
+const TagList: React.FC<UserState> = ({ userId, requestedUsername, requestedUserId, isPageOwner }) => {
   const [page, setPage] = React.useState(1);
 
   // Factor out this, putTags, and deleteTags
   const getTags = React.useCallback(
     async (key: string, page = 1) =>
-      await appFetch(`/api/rest/v3/tags/?user=${userId}&page=${page}&page_size=50&order_by=name`),
+      await appFetch(`/api/rest/v3/tags/?user=${requestedUserId}&page=${page}&page_size=50&order_by=name`),
     []
   );
 
@@ -25,14 +25,13 @@ const TagList: React.FC<UserState> = ({ userId, userName, isPageOwner }) => {
   const [modalTag, setModalTag] = useState('');
   const handleShow = useModal(modalTag, setModalTag, setShow);
   const [showDelete, setShowDelete] = useState(false);
-  const [modalDeleteTag, setModalDeleteTag] = useState('');
-  const handleDeleteShow = useModal(modalDeleteTag, setModalDeleteTag, setShowDelete);
+  const handleDeleteShow = useModal(modalTag, setModalTag, setShowDelete);
 
   return (
     <>
       <h1>
         <i className="fa fa-tags gray" />
-        &nbsp;{isPageOwner ? 'Your tags' : 'Public tags for ' + userName}
+        &nbsp;{isPageOwner ? 'Your tags' : 'Public tags for ' + requestedUsername}
       </h1>
       <div className="table-responsive">
         {isLoading ? (
@@ -44,7 +43,7 @@ const TagList: React.FC<UserState> = ({ userId, userName, isPageOwner }) => {
           // or if fetching a new page, the last successful page's data
           <TagListInner
             data={resolvedData.results}
-            userName={userName}
+            requestedUsername={requestedUsername}
             isPageOwner={isPageOwner}
             onEditTagClick={handleShow}
             onDeleteTagClick={handleDeleteShow}
@@ -104,14 +103,7 @@ const TagList: React.FC<UserState> = ({ userId, userName, isPageOwner }) => {
         </div>
       )}
       <TagEditModal tag={modalTag} setTag={setModalTag} userId={userId} show={show} setShow={setShow} page={page} />
-      <TagDeleteModal
-        tag={modalDeleteTag}
-        setTag={setModalDeleteTag}
-        show={showDelete}
-        setShow={setShowDelete}
-        userId={userId}
-        page={page}
-      />
+      <TagDeleteModal tag={modalTag} setTag={setModalTag} show={showDelete} setShow={setShowDelete} page={page} />
     </>
   );
 };

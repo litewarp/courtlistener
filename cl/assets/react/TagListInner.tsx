@@ -13,7 +13,7 @@ interface TagListInnerProps {
 const TagListInner: React.FC<TagListInnerProps> = ({
   data,
   isPageOwner,
-  userName,
+  requestedUsername,
   onEditTagClick,
   onDeleteTagClick,
 }) => {
@@ -34,7 +34,7 @@ const TagListInner: React.FC<TagListInnerProps> = ({
             return (
               <tr key={tag.id}>
                 <td>
-                  <a href={`/tags/${userName}/${tag.name}/`} className="black-link">
+                  <a href={`/tags/${requestedUsername}/${tag.name}/`} className="black-link">
                     <span className="tag">{tag.name}</span>
                   </a>
                 </td>
@@ -47,7 +47,7 @@ const TagListInner: React.FC<TagListInnerProps> = ({
                     <td className="text-right">
                       <a className="btn btn-primary btn-sm inline" onClick={() => onEditTagClick(tag)}>
                         <i className="fa fa-pencil" />
-                        &nbsp;Delete
+                        &nbsp;Edit
                       </a>{' '}
                       <a className="btn btn-danger btn-sm inline" onClick={() => onDeleteTagClick(tag)}>
                         <i className="fa fa-trash-o" />

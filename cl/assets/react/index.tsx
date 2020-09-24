@@ -7,12 +7,10 @@ import TagList from './TagList';
 function getDataFromReactRoot() {
   const div = document.querySelector('div#react-root');
   if (div && div instanceof HTMLElement) {
-    const authStr = div.dataset.authenticated;
-    if (!authStr) return {};
-    const strParts = authStr.split(':', 2);
     return {
-      userId: parseInt(strParts[0], 10),
-      userName: strParts[1],
+      userId: div.dataset.userId && parseInt(div.dataset.userId, 10),
+      requestedUsername: div.dataset.requestedUsername,
+      requestedUserId: div.dataset.requestedUserId && parseInt(div.dataset.requestedUserId, 10),
       editUrl: div.dataset.editUrl,
       isPageOwner: div.dataset.isPageOwner != '',
     };

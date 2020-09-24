@@ -175,7 +175,8 @@ export const TagEditModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow,
                 <div className="col-sm-offset-2 col-sm-10">
                   <div className="checkbox">
                     <label>
-                      <input type="checkbox" ref={register} name="published" defaultChecked={tag.published} /> Published
+                      <input type="checkbox" ref={register} name="published" defaultChecked={tag.published} /> Publish
+                      this tag so others can see it?
                     </label>
                   </div>
                 </div>
@@ -193,7 +194,7 @@ export const TagEditModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow,
   );
 };
 
-export const TagDeleteModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow, userId, page }) => {
+export const TagDeleteModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow, page }) => {
   const deleteTag = React.useCallback(
     async (tag: Tag) =>
       await appFetch(`/api/rest/v3/tags/${tag.id}/`, {
@@ -237,7 +238,8 @@ export const TagDeleteModal: React.FC<ModalProps> = ({ tag, setTag, show, setSho
       </Modal.Body>
       <Modal.Footer>
         <Button onClick={onSubmit} bsStyle="danger" bsSize="large">
-          <i className="fa fa-trash-o"></i>&nbsp;Delete Now
+          <i className="fa fa-trash-o" />
+          &nbsp;Delete Now
         </Button>
       </Modal.Footer>
     </Modal>

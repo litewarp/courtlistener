@@ -3,14 +3,13 @@
 {% load text_filters %}
 {% load render_bundle from webpack_loader %}
 
-{% block title %}Tags for: {{ requested_user }} – CourtListener.com{% endblock %}
-{% block og_title %}Tags for: {{ requested_user }} – CourtListener.com{% endblock %}
+{% block title %}{% if is_page_owner %}Tags{% else %}Public tags{% endif %} for: {{ requested_user }} – CourtListener.com{% endblock %}
+{% block og_title %}{% if is_page_owner %}Tags{% else %}Public tags{% endif %} for: {{ requested_user }} – CourtListener.com{% endblock %}
 {% block description %}CourtListener lets you tag and share legal information. View the tags for {{ requested_user }}.{% endblock %}
 {% block og_description %}CourtListener lets you tag and share legal information. View the tags for {{ requested_user }}.{% endblock %}
 {% block og_image %}{% get_full_host %}{{ STATIC_URL }}png/og-image-tag-300x300.png{% endblock %}
 
 {% block footer-scripts %}
-  <script defer type="text/javascript" src="{{ STATIC_URL }}js/tag-utils.js?v=20200722"></script>
   {% render_bundle 'main' %} {% render_bundle 'vendor' %}
 {% endblock %}
 
@@ -23,9 +22,11 @@
     <div
       class="col-xs-12"
       id="react-root"
-      data-authenticated="{% if user.is_authenticated %}{{ user.pk }}:{{ user.get_username }}{% endif %}"
+      data-user-id="{% if user.is_authenticated %}{{ user.pk }}{% endif %}"
+      data-requested-username="{{ requested_user.username }}"
+      data-requested-user-id="{{ requested_user.pk }}"
       data-edit-url="{% url "tag_list" request.user %}"
-      data-is-page-owner="{% if is_page_owner %}{{ is_page_owner }}{% endif %}"
+      data-is-page-owner="{% if is_page_owner %}true{% endif %}"
     ></div>
   </div>
 {% endblock %}
