@@ -7,9 +7,16 @@ interface TagListInnerProps {
   userName: string;
   isPageOwner: boolean;
   onEditTagClick: () => void;
+  onDeleteTagClick: () => void;
 }
 
-const TagListInner: React.FC<TagListInnerProps> = ({ data, isPageOwner, userName, onEditTagClick }) => {
+const TagListInner: React.FC<TagListInnerProps> = ({
+  data,
+  isPageOwner,
+  requestedUsername,
+  onEditTagClick,
+  onDeleteTagClick,
+}) => {
   return (
     <div className="table-responsive">
       <table className="table settings-table tablesorter-bootstrap">
@@ -27,7 +34,7 @@ const TagListInner: React.FC<TagListInnerProps> = ({ data, isPageOwner, userName
             return (
               <tr key={tag.id}>
                 <td>
-                  <a href={`/tags/${userName}/${tag.name}/`} className="black-link">
+                  <a href={`/tags/${requestedUsername}/${tag.name}/`} className="black-link">
                     <span className="tag">{tag.name}</span>
                   </a>
                 </td>
@@ -38,9 +45,13 @@ const TagListInner: React.FC<TagListInnerProps> = ({ data, isPageOwner, userName
                   <>
                     <td>{tag.published ? 'Yes' : 'No'}</td>
                     <td className="text-right">
-                      <a className="btn btn-primary btn-sm inline" data-id={tag.id} onClick={() => onEditTagClick(tag)}>
+                      <a className="btn btn-primary btn-sm inline" onClick={() => onEditTagClick(tag)}>
                         <i className="fa fa-pencil" />
-                        &nbsp;Edit / Delete
+                        &nbsp;Edit
+                      </a>{' '}
+                      <a className="btn btn-danger btn-sm inline" onClick={() => onDeleteTagClick(tag)}>
+                        <i className="fa fa-trash-o" />
+                        &nbsp;Delete
                       </a>
                     </td>
                   </>

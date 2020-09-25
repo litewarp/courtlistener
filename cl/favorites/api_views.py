@@ -10,7 +10,7 @@ from cl.favorites.filters import UserTagFilter, DocketTagFilter
 from cl.favorites.models import UserTag, DocketTag
 
 
-class UserTagViewSet(LoggingMixin, ModelViewSet):
+class UserTagViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsOwner]
     serializer_class = UserTagSerializer
     pagination_class = MediumAdjustablePagination
@@ -28,7 +28,7 @@ class UserTagViewSet(LoggingMixin, ModelViewSet):
         ).order_by("-id")
 
 
-class DocketTagViewSet(LoggingMixin, ModelViewSet):
+class DocketTagViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated, IsTagOwner]
     serializer_class = DocketTagSerializer
     filter_class = DocketTagFilter

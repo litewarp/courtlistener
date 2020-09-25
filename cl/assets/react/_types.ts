@@ -21,9 +21,11 @@ export interface ApiResult<T> {
   results: T[];
 }
 
-export interface UserState {
+export interface PageState {
   userId?: number;
-  userName?: string;
+  requestedUsername?: string;
+  requestedUserId?: number;
   editUrl?: string;
   isPageOwner?: boolean;
+  tagId?: number;
 }

@@ -5,23 +5,6 @@ import { ListItem } from './ListItem';
 import { useTags } from './_useTags';
 import { Association, UserState } from './_types';
 
-function getDataFromReactRoot() {
-  const div = document.querySelector('div#react-root');
-  if (div && div instanceof HTMLElement) {
-    const authStr = div.dataset.authenticated;
-    if (!authStr) return {};
-    const strParts = authStr.split(':', 2);
-    return {
-      userId: parseInt(strParts[0], 10),
-      userName: strParts[1],
-      editUrl: div.dataset.editUrl,
-    };
-  } else {
-    console.error('Unable to fetch credentials from server. Tags disabled.');
-    return { userName: undefined, editUrl: undefined };
-  }
-}
-
 function getDocketIdFromH1Tag() {
   const h1 = document.querySelector('h1[data-id]');
   if (h1 && h1 instanceof HTMLElement) {
