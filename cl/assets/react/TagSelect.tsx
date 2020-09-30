@@ -3,18 +3,12 @@ import { useVirtual } from 'react-virtual';
 import { useCombobox } from 'downshift';
 import { ListItem } from './ListItem';
 import { useTags } from './_useTags';
-import { Association, UserState } from './_types';
+import { Association } from './_types';
+import { useUser } from './withUser';
+import { getDocketIdFromH1Tag } from './_domUtils';
 
-function getDocketIdFromH1Tag() {
-  const h1 = document.querySelector('h1[data-id]');
-  if (h1 && h1 instanceof HTMLElement) {
-    return parseInt(h1.dataset.id as string);
-  } else {
-    console.error('Unable to fetch docket number from page. Tags disabled.');
-  }
-}
-
-const TagSelect: React.FC<UserState> = ({ userId, userName, editUrl }) => {
+const TagSelect: React.FC<> = () => {
+  const { userId, userName, editUrl } = useUser();
   const [validationError, setValidationError] = React.useState<null | string>(null);
 
   const docket = getDocketIdFromH1Tag();
@@ -164,7 +158,7 @@ const TagSelect: React.FC<UserState> = ({ userId, userName, editUrl }) => {
         >
           <input
             {...getInputProps({
-              onBlur: (e: React.FocusEvent) => setValidationError(null),
+              onBlur: () => setValidationError(null),
               onChange: (e: React.ChangeEvent<HTMLInputElement>) => setTextVal(e.target.value),
             })}
             className={`form-control ${validationError && 'is-invalid'}`}
@@ -191,7 +185,7 @@ const TagSelect: React.FC<UserState> = ({ userId, userName, editUrl }) => {
             }}
           >
             {isOpen &&
-              rowVirtualizer.virtualItems.map((virtualRow, index) => {
+              rowVirtualizer.virtualItems.map((virtualRow) => {
                 const isLoaderRow = virtualRow.index > tags.length - 1;
                 const tag = tags[virtualRow.index];
                 return (

@@ -4,19 +4,19 @@ import { format, parseISO } from 'date-fns';
 
 interface TagListInnerProps {
   data: Tag[];
-  userName: string;
+  requestedUsername: string;
   isPageOwner: boolean;
   onEditTagClick: () => void;
   onDeleteTagClick: () => void;
 }
 
-const TagListInner: React.FC<TagListInnerProps> = ({
+const TagListInner = ({
   data,
   isPageOwner,
   requestedUsername,
   onEditTagClick,
   onDeleteTagClick,
-}) => {
+}: TagListInnerProps) => {
   return (
     <div className="table-responsive">
       <table className="table settings-table tablesorter-bootstrap">

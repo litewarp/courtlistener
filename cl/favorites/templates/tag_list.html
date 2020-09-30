@@ -22,7 +22,7 @@
     <div
       class="col-xs-12"
       id="react-root"
-      data-user-id="{% if user.is_authenticated %}{{ user.pk }}{% endif %}"
+      data-authenticated="{% if user.is_authenticated %}{{ user.pk }}:{{ user.get_username }}{% endif %}"
       data-requested-username="{{ requested_user.username }}"
       data-requested-user-id="{{ requested_user.pk }}"
       data-edit-url="{% url "tag_list" request.user %}"

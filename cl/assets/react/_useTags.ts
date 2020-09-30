@@ -14,7 +14,7 @@ export const useTags = ({ docket, enabled, userId }: UseTagsProps) => {
 
   const getTags = React.useCallback(
     async (key: string, page = 1) => await appFetch(`/api/rest/v3/tags/?user=${userId}&page=${page}`),
-    []
+    [userId]
   );
 
   const getAssociations = React.useCallback(
@@ -116,8 +116,8 @@ export const useTags = ({ docket, enabled, userId }: UseTagsProps) => {
     const flatTags = !tags
       ? []
       : Object.entries(tags)
-        .map(([key, apiResult]) => (apiResult as ApiResult<Tag>).results)
-        .flat(1);
+          .map(([key, apiResult]) => (apiResult as ApiResult<Tag>).results)
+          .flat(1);
 
     // rebuild tagData with the assocId
     const enhancedTags = flatTags.map((tag: Tag) => {

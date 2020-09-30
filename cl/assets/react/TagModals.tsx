@@ -1,35 +1,23 @@
-import { Button, Modal } from 'react-bootstrap';
 import React from 'react';
-import { useForm } from 'react-hook-form';
+import { Formik, Field, Form, FormikProps, ErrorMessage } from 'formik';
 import { queryCache, useMutation } from 'react-query';
 import { Tag } from './_types';
 import { appFetch } from './_fetch';
+import { object, string } from 'yup';
 
 type Inputs = {
   example: string;
   exampleRequired: string;
 };
 
-interface ModalProps {
+interface TagModalProps {
   tag: Tag;
-  setTag: () => void;
-  show: boolean;
-  setShow: () => void;
-  userId: string;
+  userId?: string;
   page: number;
+  closeModal: () => void;
 }
 
-export function useModal(tag: Tag, setModalTag: any, setShow: any) {
-  const handleShow = (tag: Tag) => {
-    // Get the item, populate the inputs, show the modal
-    console.log(`Modal is opening; tag ID is: ${tag.id}`);
-    setModalTag(tag);
-    setShow(true);
-  };
-  return handleShow;
-}
-
-export const TagEditModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow, userId, page }) => {
+export const TagEdit = ({ tag, userId, page }: TagModalProps) => {
   const putTag = React.useCallback(
     async (tag: Tag) =>
       await appFetch(`/api/rest/v3/tags/${tag.id}/`, {
@@ -39,34 +27,18 @@ export const TagEditModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow,
     []
   );
 
-  const checktagByNameAndId = React.useCallback(
-    // Check if a tag already exists with a given name excluding the one we
-    // know exists.
-    async (name: string, id: number) => await appFetch(`/api/rest/v3/tags/?user=${userId}&name=${name}&id!=${id}`),
-    []
-  );
+  const validationSchema = object().shape({
+    name: string()
+      .required('This field is required')
+      .matches(/^[a-z0-9\-]+$/, "Only lowercase letters, numbers, and '-' are allowed.")
+      .test('nameExists', 'You already have a tag with that name', async (value) => {
+        if (!value) return false;
 
-  const validateTagDoesNotExist = async (tagName: string) => {
-    if (!tagName) {
-      return false;
-    }
-    const tags = await checktagByNameAndId(tagName, tag.id);
-    console.log(`Got ${tags.count} tags when checking for duplicates`);
-    return tags.count == 0;
-  };
-
-  const handleClose = () => {
-    // Clear the inputs, hide the modal
-    setShow(false);
-  };
-
-  // Form methods
-  const { register, handleSubmit, watch, errors } = useForm<Inputs>();
-  const onSubmit = (data) => {
-    console.log(`Data in submitted form is`, data);
-    updateTag(data);
-    handleClose();
-  };
+        const tags = await appFetch(`/api/rest/v3/tags/?user=${userId}&name=${value}&id!=${tag.id}`);
+        console.log(`Got ${tags.count} tags when checking for duplicates`);
+        return tags.count == 0;
+      }),
+  });
 
   const [updateTag] = useMutation(putTag, {
     onSuccess: (data, variables) => {
@@ -87,114 +59,83 @@ export const TagEditModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow,
   });
 
   return (
-    <Modal show={show} onHide={handleClose} animation={false}>
-      <Modal.Header closeButton>
-        <Modal.Title componentClass="h2">Edit Tag</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        {!tag ? (
-          <>
-            <i className="fa fa-spinner fa-pulse gray" />
-            &nbsp;Loading...
-          </>
-        ) : (
-          <>
-            <form className="form-horizontal" onSubmit={handleSubmit(onSubmit)}>
-              <input type="hidden" value={tag.id} name="id" ref={register} />
-              <div className={!errors.name ? 'form-group' : 'form-group has-error'}>
-                <label htmlFor="name" className="col-sm-2 control-label">
-                  Tag Name
-                </label>
-                <div className="col-sm-10">
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="name"
-                    placeholder="A name for your tag..."
-                    defaultValue={tag ? tag.name : ''}
-                    ref={register({
-                      required: true,
-                      pattern: /^[a-z0-9-]*$/,
-                      validate: validateTagDoesNotExist,
-                    })}
-                  />
-                  <p className="gray">
-                    <i className="fa fa-info-circle" /> Note that changing the tag name changes its link, and your
-                    bookmarks or browser history may fail.
-                  </p>
-                  {errors.name?.type === 'required' && <p className="has-error help-block">This field is required.</p>}
-                  {errors.name?.type === 'pattern' && (
-                    <p className="has-error help-block">
-                      Only lowercase letters, numbers, and &apos;-&apos; are allowed.
-                    </p>
-                  )}
-                  {errors.name?.type === 'validate' && (
-                    <p className="has-error help-block">You already have a tag with that name.</p>
-                  )}
-                </div>
-              </div>
-              <div className="form-group">
-                <label htmlFor="title" className="col-sm-2 control-label">
-                  Title
-                </label>
-                <div className="col-sm-10">
-                  <input
-                    type="text"
-                    className="form-control"
-                    name="title"
-                    placeholder="A brief, one-line summary of your tag..."
-                    defaultValue={tag ? tag.title : ''}
-                    ref={register}
-                  />
-                </div>
-              </div>
-              <div className="form-group">
-                <label htmlFor="description" className="col-sm-2 control-label">
-                  Description
-                </label>
-                <div className="col-sm-10">
-                  <p className="gray">
-                    Provide any additional comments you have about this tag, describing the kinds of dockets it contains
-                    or why you created it.
-                  </p>
-                  <textarea
-                    className="form-control"
-                    name="description"
-                    placeholder="A long description of your tag..."
-                    rows={6}
-                    defaultValue={tag ? tag.description : ''}
-                    ref={register}
-                  />
-                  <p className="text-right">
-                    <a href="/help/markdown/">Markdown Supported</a>
-                  </p>
-                </div>
-              </div>
+    <Formik
+      initialValues={tag}
+      onSubmit={async (values, actions) => {
+        console.log(`Data in submitted form is`, data);
+        await updateTag(data);
+        closeModal();
+      }}
+      validationSchema={validationSchema}
+    >
+      {(props: FormikProps) => (
+        <Form className="form-horizontal">
+          <Field type="hidden" name="id" />
 
-              <div className="form-group">
-                <div className="col-sm-offset-2 col-sm-10">
-                  <div className="checkbox">
-                    <label>
-                      <input type="checkbox" ref={register} name="published" defaultChecked={tag.published} /> Publish
-                      this tag so others can see it?
-                    </label>
-                  </div>
-                </div>
+          <div className={!props.errors.name ? 'form-group' : 'form-group has-error'}>
+            <label htmlFor="name" className="col-sm-2 control-label">
+              Tag Name
+            </label>
+            <div className="col-sm-10">
+              <Field name="name" placeholder="A name for your tag..." className="form-control" />
+              <p className="gray">
+                <i className="fa fa-info-circle" /> Note that changing the tag name changes its link, and your bookmarks
+                or browser history may fail.
+              </p>
+              <ErrorMessage name="name" className="has-error help-block" />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="title" className="col-sm-2 control-label">
+              Title
+            </label>
+            <div className="col-sm-10">
+              <Field className="form-control" name="title" placeholder="A brief, one-line summary of your tag..." />
+            </div>
+          </div>
+          <div className="form-group">
+            <label htmlFor="description" className="col-sm-2 control-label">
+              Description
+            </label>
+            <div className="col-sm-10">
+              <p className="gray">
+                Provide any additional comments you have about this tag, describing the kinds of dockets it contains or
+                why you created it.
+              </p>
+              <Field
+                as="textarea"
+                className="form-control"
+                name="description"
+                placeholder="A long description of your tag..."
+                rows={6}
+              />
+              <p className="text-right">
+                <a href="/help/markdown/">Markdown Supported</a>
+              </p>
+            </div>
+          </div>
+
+          <div className="form-group">
+            <div className="col-sm-offset-2 col-sm-10">
+              <div className="checkbox">
+                <label>
+                  <Field type="checkbox" name="published" /> Publish this tag so others can see it?
+                </label>
               </div>
-            </form>
-          </>
-        )}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={handleSubmit(onSubmit)} bsStyle="primary" bsSize="large">
-          Save Changes
-        </Button>
-      </Modal.Footer>
-    </Modal>
+            </div>
+          </div>
+
+          <button type="submit" disabled={props.isSubmitting} className="btn btn-primary btn-large">
+            Save Changes
+          </button>
+        </Form>
+      )}
+    </Formik>
   );
 };
 
-export const TagDeleteModal: React.FC<ModalProps> = ({ tag, setTag, show, setShow, page }) => {
+export const TagDelete = ({ tag, page, closeModal }: TagModalProps) => {
   const deleteTag = React.useCallback(
     async (tag: Tag) =>
       await appFetch(`/api/rest/v3/tags/${tag.id}/`, {
@@ -203,14 +144,10 @@ export const TagDeleteModal: React.FC<ModalProps> = ({ tag, setTag, show, setSho
     [tag]
   );
 
-  const handleClose = () => {
-    setShow(false);
-  };
-
   const onSubmit = () => {
     console.log(`Got request to delete tag.`, tag);
     removeTag(tag);
-    handleClose();
+    closeModal();
   };
 
   const [removeTag] = useMutation(deleteTag, {
@@ -227,21 +164,14 @@ export const TagDeleteModal: React.FC<ModalProps> = ({ tag, setTag, show, setSho
   });
 
   return (
-    <Modal show={show} onHide={handleClose} animation={false}>
-      <Modal.Header closeButton>
-        <Modal.Title componentClass="h2">Delete this Tag?</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
-        <p>
-          Deleting this tag removes all items from its collection and removes the URL from our system. There is no undo.
-        </p>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={onSubmit} bsStyle="danger" bsSize="large">
-          <i className="fa fa-trash-o" />
-          &nbsp;Delete Now
-        </Button>
-      </Modal.Footer>
-    </Modal>
+    <>
+      <p>
+        Deleting this tag removes all items from its collection and removes the URL from our system. There is no undo.
+      </p>
+      <button onClick={onSubmit} className="btn btn-danger btn-large">
+        <i className="fa fa-trash-o" />
+        &nbsp;Delete Now
+      </button>
+    </>
   );
 };
