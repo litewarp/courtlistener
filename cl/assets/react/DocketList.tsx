@@ -1,5 +1,5 @@
 import React from 'react';
-import { useQuery } from 'react-query';
+import { useQuery, useMutation } from 'react-query';
 import { appFetch } from './_fetch';
 import { parseISO, format } from 'date-fns';
 import { useUser } from './withUser';
@@ -15,8 +15,36 @@ const DocketListTitle = ({ count }: { count: number }) => {
   );
 };
 
-const DocketDropDown = ({ docket_entries, pacer_docket_url }: Docket) => {
+const DocketDropDown = ({ id, docket_entries, pacer_docket_url, tagId }: Docket & { tagId: string }) => {
   const { isPageOwner } = useUser();
+
+  const { data: associations } = useQuery(
+    'associations',
+    React.useCallback(async () => await appFetch(`/api/rest/v3/docket-tags/?docket=${id}`), [])
+  );
+
+  const assoc = associations?.results.find((assoc) => assoc.tag === tagId && assoc.docket === id);
+
+  const deleteAssoc = React.useCallback(
+    async ({ assocId }: { assocId: number }) =>
+      await appFetch(`/api/rest/v3/docket-tags/${assocId}/`, {
+        method: 'DELETE',
+      }),
+    []
+  );
+  const [deleteAssociation] = useMutation(deleteAssoc, {
+    onSuccess: (data, variables) => {
+      // update the cache to remove the just-deleted association
+      queryCache.setQueryData('associations', (old: any) => {
+        console.log(data, old);
+        return {
+          ...old,
+          results: old.results.filter((assoc: Association) => assoc.id !== variables.assocId),
+        };
+      });
+    },
+  });
+
   return (
     <div className="dropdown float-right">
       <button
@@ -32,7 +60,7 @@ const DocketDropDown = ({ docket_entries, pacer_docket_url }: Docket) => {
       </button>
       <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
         {isPageOwner && (
-          <li>
+          <li onClick={() => deleteAssociation({ assocId: assoc.id })}>
             <a href="">Untag this Item</a>
           </li>
         )}
@@ -127,7 +155,7 @@ const CourtName = ({ courtUrl }: { courtUrl: string }) => {
   return <span className="bullet-tail">{court ? court.full_name : shortName}</span>;
 };
 
-const Docket = ({ id }: { id: number }) => {
+const Docket = ({ id, tagId }: { id: number; tagId: number }) => {
   const { data, isLoading, isError, error } = useQuery(
     ['docket', id],
     async () => await appFetch(`/api/rest/v3/dockets/?id=${id}`)
@@ -143,7 +171,7 @@ const Docket = ({ id }: { id: number }) => {
       ) : (
         <>
           <DocketCaseName {...docket} />
-          <DocketDropDown {...docket} />
+          <DocketDropDown {...docket} tagId={tagId} />
           <p>
             <CourtName courtUrl={docket?.court} />
             <AssignedTo {...docket} />
@@ -168,7 +196,7 @@ const DocketList = (props: Tag) => {
       <div id="docket-list">
         <ul>
           {props.dockets?.map((id) => (
-            <Docket key={id} id={id} />
+            <Docket key={id} id={id} tagId={props.id} />
           ))}
         </ul>
       </div>
