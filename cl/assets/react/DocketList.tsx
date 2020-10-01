@@ -1,9 +1,11 @@
 import React from 'react';
-import { useQuery, useMutation } from 'react-query';
+import { useQuery } from 'react-query';
 import { appFetch } from './_fetch';
 import { parseISO, format } from 'date-fns';
-import { useUser } from './withUser';
 import { Docket as DocketProps } from './_types';
+import DocketListDropDown from './DocketListDropDown';
+
+// individual components to be used to render the main Docket Component
 
 const DocketListTitle = ({ count }: { count: number }) => {
   const title = count === 0 ? 'Nothing tagged yet' : count === 1 ? '1 Tagged Docket' : `${count} Tagged Dockets`;
@@ -15,83 +17,18 @@ const DocketListTitle = ({ count }: { count: number }) => {
   );
 };
 
-const DocketDropDown = ({ id, docket_entries, pacer_docket_url, tagId }: Docket & { tagId: string }) => {
-  const { isPageOwner } = useUser();
-
-  const { data: associations } = useQuery(
-    'associations',
-    React.useCallback(async () => await appFetch(`/api/rest/v3/docket-tags/?docket=${id}`), [])
-  );
-
-  const assoc = associations?.results.find((assoc) => assoc.tag === tagId && assoc.docket === id);
-
-  const deleteAssoc = React.useCallback(
-    async ({ assocId }: { assocId: number }) =>
-      await appFetch(`/api/rest/v3/docket-tags/${assocId}/`, {
-        method: 'DELETE',
-      }),
-    []
-  );
-  const [deleteAssociation] = useMutation(deleteAssoc, {
-    onSuccess: (data, variables) => {
-      // update the cache to remove the just-deleted association
-      queryCache.setQueryData('associations', (old: any) => {
-        console.log(data, old);
-        return {
-          ...old,
-          results: old.results.filter((assoc: Association) => assoc.id !== variables.assocId),
-        };
-      });
-    },
-  });
-
-  return (
-    <div className="dropdown float-right">
-      <button
-        className="btn btn-primary dropdown-toggle"
-        type="button"
-        id="dropdownMenu1"
-        data-toggle="dropdown"
-        aria-haspopup="true"
-        aria-expanded="true"
-      >
-        {'Actions '}
-        <span className="caret"></span>
-      </button>
-      <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
-        {isPageOwner && (
-          <li onClick={() => deleteAssociation({ assocId: assoc.id })}>
-            <a href="">Untag this Item</a>
-          </li>
-        )}
-        <li role="separator" className="divider"></li>
-        {docket_entries?.count && (
-          <li>
-            <a href={`/?type=r&docket_id="${id}"`}>
-              <i className="fa fa-search"></i>
-              &nbsp;Search this Docket
-            </a>
-          </li>
-        )}
-        {pacer_docket_url && (
-          <li>
-            <a href={pacer_docket_url} target="_blank" rel="noreferrer">
-              <i className="fa fa-external-link"></i>
-              &nbsp;View on Pacer
-            </a>
-          </li>
-        )}
-      </ul>
-    </div>
-  );
-};
-
 const DocketCaseName = ({ case_name, docket_number, absolute_url }: DocketProps) => (
   <h4>
     <a href={absolute_url} className="black-link no-underline">
       {case_name} {docket_number && `(${docket_number})`}
     </a>
   </h4>
+);
+
+const DocketEntries = ({ count }: { count: number }) => (
+  <span className="bullet-tail">
+    {count || 0} entr{count === 1 ? 'y' : 'ies'}
+  </span>
 );
 
 const AssignedTo = ({ assigned_to, assigned_to_str }: DocketProps) => {
@@ -155,13 +92,13 @@ const CourtName = ({ courtUrl }: { courtUrl: string }) => {
   return <span className="bullet-tail">{court ? court.full_name : shortName}</span>;
 };
 
+// main Docket component
 const Docket = ({ id, tagId }: { id: number; tagId: number }) => {
   const { data, isLoading, isError, error } = useQuery(
     ['docket', id],
     async () => await appFetch(`/api/rest/v3/dockets/?id=${id}`)
   );
   const docket = data?.results[0];
-
   return (
     <li style={{ listStyle: 'none' }}>
       {isLoading ? (
@@ -171,7 +108,7 @@ const Docket = ({ id, tagId }: { id: number; tagId: number }) => {
       ) : (
         <>
           <DocketCaseName {...docket} />
-          <DocketDropDown {...docket} tagId={tagId} />
+          <DocketListDropDown {...docket} tagId={tagId} />
           <p>
             <CourtName courtUrl={docket?.court} />
             <AssignedTo {...docket} />
@@ -179,9 +116,7 @@ const Docket = ({ id, tagId }: { id: number; tagId: number }) => {
             <DocketDate text="Filed" date={docket?.date_filed} />
             <DocketDate text="Terminated" date={docket?.date_terminated} />
             <DocketDate text="Last Filing" date={docket?.date_last_filing} />
-            <span className="bullet-tail">
-              {docket.docket_entries?.count || 0} entr{docket.docket_entries?.count === 1 ? 'y' : 'ies'}
-            </span>
+            <DocketEntries count={docket?.docket_entries?.length} />
           </p>
         </>
       )}
@@ -189,6 +124,7 @@ const Docket = ({ id, tagId }: { id: number; tagId: number }) => {
   );
 };
 
+// render the full list of the tagged dockets
 const DocketList = (props: Tag) => {
   return (
     <>
