@@ -61,7 +61,11 @@ const TagSimpleEdit: React.FC = () => {
     <>
       {isPageOwner && (
         <div className="float-right v-offset-above-1">
-          <button className="btn btn-primary btn-lg" onClick={() => dispatch({ type: 'edit' })}>
+          <button
+            className="btn btn-primary btn-lg"
+            onClick={() => dispatch({ type: 'edit' })}
+            style={{ margin: '0 5px' }}
+          >
             <i className="fa fa-pencil" />
             &nbsp;Edit
           </button>

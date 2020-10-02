@@ -69,7 +69,7 @@ export const TagEdit = ({ tag, userId, page }: TagModalProps) => {
       validationSchema={validationSchema}
     >
       {(props: FormikProps) => (
-        <Form className="form-horizontal">
+        <Form className="form">
           <Field type="hidden" name="id" />
 
           <div className={!props.errors.name ? 'form-group' : 'form-group has-error'}>
@@ -78,7 +78,7 @@ export const TagEdit = ({ tag, userId, page }: TagModalProps) => {
             </label>
             <div className="col-sm-10">
               <Field name="name" placeholder="A name for your tag..." className="form-control" />
-              <p className="gray">
+              <p className="gray" style={{ padding: '2px' }}>
                 <i className="fa fa-info-circle" /> Note that changing the tag name changes its link, and your bookmarks
                 or browser history may fail.
               </p>
@@ -90,15 +90,19 @@ export const TagEdit = ({ tag, userId, page }: TagModalProps) => {
             <label htmlFor="title" className="col-sm-2 control-label">
               Title
             </label>
+
             <div className="col-sm-10">
               <Field className="form-control" name="title" placeholder="A brief, one-line summary of your tag..." />
             </div>
           </div>
+
           <div className="form-group">
             <label htmlFor="description" className="col-sm-2 control-label">
+              <br />
               Description
             </label>
             <div className="col-sm-10">
+              <br />
               <p className="gray">
                 Provide any additional comments you have about this tag, describing the kinds of dockets it contains or
                 why you created it.
@@ -110,20 +114,15 @@ export const TagEdit = ({ tag, userId, page }: TagModalProps) => {
                 placeholder="A long description of your tag..."
                 rows={6}
               />
-              <p className="text-right">
+              <p className="text-right" style={{ padding: '2px' }}>
                 <a href="/help/markdown/">Markdown Supported</a>
               </p>
             </div>
           </div>
 
-          <div className="form-group">
-            <div className="col-sm-offset-2 col-sm-10">
-              <div className="checkbox">
-                <label>
-                  <Field type="checkbox" name="published" /> Publish this tag so others can see it?
-                </label>
-              </div>
-            </div>
+          <div className="col-sm-offset-2 col-sm-10" style={{ display: 'flex' }}>
+            <Field type="checkbox" name="published" className="checkbox" />
+            <p style={{ paddingTop: '3px', marginLeft: '5px' }}>Publish this tag so others can see it?</p>
           </div>
 
           <button type="submit" disabled={props.isSubmitting} className="btn btn-primary btn-large">
@@ -164,7 +163,7 @@ export const TagDelete = ({ tag, page, closeModal }: TagModalProps) => {
   });
 
   return (
-    <>
+    <div style={{ padding: '10px' }}>
       <p>
         Deleting this tag removes all items from its collection and removes the URL from our system. There is no undo.
       </p>
@@ -172,6 +171,6 @@ export const TagDelete = ({ tag, page, closeModal }: TagModalProps) => {
         <i className="fa fa-trash-o" />
         &nbsp;Delete Now
       </button>
-    </>
+    </div>
   );
 };

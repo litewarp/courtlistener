@@ -100,24 +100,26 @@ const Docket = ({ id, tagId }: { id: number; tagId: number }) => {
   );
   const docket = data?.results[0];
   return (
-    <li style={{ listStyle: 'none' }}>
+    <li style={{ listStyle: 'none', display: 'flex', justifyContent: 'space-between' }}>
       {isLoading ? (
         'Loading ...'
       ) : isError ? (
         `Error: ${error.message}`
       ) : (
         <>
-          <DocketCaseName {...docket} />
+          <div>
+            <DocketCaseName {...docket} />
+            <p>
+              <CourtName courtUrl={docket?.court} />
+              <AssignedTo {...docket} />
+              <ReferredTo {...docket} />
+              <DocketDate text="Filed" date={docket?.date_filed} />
+              <DocketDate text="Terminated" date={docket?.date_terminated} />
+              <DocketDate text="Last Filing" date={docket?.date_last_filing} />
+              <DocketEntries count={docket?.docket_entries?.length} />
+            </p>
+          </div>
           <DocketListDropDown {...docket} tagId={tagId} />
-          <p>
-            <CourtName courtUrl={docket?.court} />
-            <AssignedTo {...docket} />
-            <ReferredTo {...docket} />
-            <DocketDate text="Filed" date={docket?.date_filed} />
-            <DocketDate text="Terminated" date={docket?.date_terminated} />
-            <DocketDate text="Last Filing" date={docket?.date_last_filing} />
-            <DocketEntries count={docket?.docket_entries?.length} />
-          </p>
         </>
       )}
     </li>
@@ -125,19 +127,17 @@ const Docket = ({ id, tagId }: { id: number; tagId: number }) => {
 };
 
 // render the full list of the tagged dockets
-const DocketList = (props: Tag) => {
-  return (
-    <>
-      <DocketListTitle count={props.dockets?.length || 0} />
-      <div id="docket-list">
-        <ul>
-          {props.dockets?.map((id) => (
-            <Docket key={id} id={id} tagId={props.id} />
-          ))}
-        </ul>
-      </div>
-    </>
-  );
-};
+const DocketList = (props: Tag) => (
+  <>
+    <DocketListTitle count={props.dockets?.length || 0} />
+    <div id="docket-list">
+      <ul>
+        {props.dockets?.map((id) => (
+          <Docket key={id} id={id} tagId={props.id} />
+        ))}
+      </ul>
+    </div>
+  </>
+);
 
 export default DocketList;
