@@ -1,10 +1,15 @@
+// index.tsx
+// Entrypoint for React
 import React from 'react';
 import ReactDOM from 'react-dom';
-import TagSelect from './TagSelect';
+import Routes from './Routes';
+import AuthContextProvider from './withUser';
 
 ReactDOM.render(
   <React.StrictMode>
-    <TagSelect />
+    <AuthContextProvider>
+      <Routes />
+    </AuthContextProvider>
   </React.StrictMode>,
   document.getElementById('react-root')
 );

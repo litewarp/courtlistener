@@ -281,12 +281,12 @@ BULK_DATA_DIR = os.path.join(INSTALL_ROOT, "cl/assets/media/bulk-data/")
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 WEBPACK_LOADER = {
-    'DEFAULT': {
-        'CACHE': not DEBUG,
-        'BUNDLE_DIR_NAME': 'bundles/',
-        'STATS_FILE': os.path.join(BASE_DIR, 'cl', 'webpack-stats.json'),
-        'POLL_INTERVAL': 0.1,
-        'TIMEOUT': None,
+    "DEFAULT": {
+        "CACHE": not DEBUG,
+        "BUNDLE_DIR_NAME": "bundles/",
+        "STATS_FILE": os.path.join(BASE_DIR, "cl", "webpack-stats.json"),
+        "POLL_INTERVAL": 0.1,
+        "TIMEOUT": None,
     }
 }
 
@@ -411,13 +411,6 @@ MARKDOWN_DEUX_STYLES = {
             "tables": None,
         },
         "safe_mode": "escape",
-        "link_patterns": [
-            (
-                re.compile(r"network\s+#?(\d+)\b", re.I),
-                r"/visualizations/scotus-mapper/\1/md/",
-            ),
-            (re.compile(r"opinion\s+#?(\d+)\b", re.I), r"/opinion/\1/md/"),
-        ],
     },
 }
 

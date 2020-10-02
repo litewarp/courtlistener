@@ -76,6 +76,7 @@ class DocketSerializer(DynamicFieldsMixin, HyperlinkedModelSerializerWithId):
     absolute_url = serializers.CharField(
         source="get_absolute_url", read_only=True
     )
+    pacer_docket_url = serializers.CharField()
 
     class Meta:
         model = Docket
