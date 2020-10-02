@@ -1,5 +1,6 @@
 {% if docket.pacer_docket_url %}
   <a href="{% url "toggle_docket_alert" %}"
+     id="toggle-docket-alert"
      data-id="{{ docket.pk }}"
      data-enable-message="Get Alerts"
      data-disable-message="Disable Alerts"
@@ -36,4 +37,15 @@
          data-disable-icon-class="fa-bell-slash-o"></i>&nbsp;<span class="alert_btn_txt">Get Alerts</span>
     {% endif %}
   </a>
+  <script type="text/javascript">
+    const toggleButton = document.querySelector('a#toggle-docket-alert');
+    toggleButton.addEventListener('click', (event) => {
+      const dropdown = document.querySelector('a#alert-dropdown');
+      if (event.currentTarget.classList.contains('btn-success')) {
+        dropdown.classList.replace('btn-success', 'btn-danger');
+      } else {
+        dropdown.classList.replace('btn-danger', 'btn-success')
+      }
+    });
+  </script>
 {% endif %}
