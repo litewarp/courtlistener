@@ -8,13 +8,17 @@ import { Association } from './_types';
 function getDataFromReactRoot() {
   const div = document.querySelector('div#react-root');
   if (div && div instanceof HTMLElement) {
+    const authStr = div.dataset.authenticated;
+    if (!authStr) return {};
+    const strParts = authStr.split(':', 2);
     return {
-      isAuthenticated: div.dataset.authenticated === 'true',
+      userId: parseInt(strParts[0], 10),
+      userName: strParts[1],
       editUrl: div.dataset.editUrl,
     };
   } else {
     console.error('Unable to fetch credentials from server. Tags disabled.');
-    return { isAuthenticated: undefined, editUrl: undefined };
+    return { userName: undefined, editUrl: undefined };
   }
 }
 
@@ -30,7 +34,7 @@ function getDocketIdFromH1Tag() {
 const TagSelect: React.FC = () => {
   const [validationError, setValidationError] = React.useState<null | string>(null);
 
-  const { isAuthenticated, editUrl } = getDataFromReactRoot();
+  const { userId, userName, editUrl } = getDataFromReactRoot();
 
   const docket = getDocketIdFromH1Tag();
 
@@ -43,7 +47,7 @@ const TagSelect: React.FC = () => {
     addNewTag,
     addNewAssociation,
     deleteAssociation,
-  } = useTags({ docket: docket as number, enabled: !!docket && isAuthenticated });
+  } = useTags({ docket: docket as number, enabled: !!docket && userName, userId: userId });
 
   const parentRef = React.useRef(null);
   const rowVirtualizer = useVirtual({
@@ -83,16 +87,16 @@ const TagSelect: React.FC = () => {
     stateReducer: (state, actionAndChanges) => {
       const { changes, type } = actionAndChanges;
       switch (type) {
-        case useCombobox.stateChangeTypes.InputKeyDownEnter:
-        case useCombobox.stateChangeTypes.ItemClick:
-          return {
-            ...changes,
-            isOpen: true, // keep menu open after selection.
-            highlightedIndex: state.highlightedIndex,
-            inputValue: '',
-          };
-        default:
-          return changes;
+      case useCombobox.stateChangeTypes.InputKeyDownEnter:
+      case useCombobox.stateChangeTypes.ItemClick:
+        return {
+          ...changes,
+          isOpen: true, // keep menu open after selection.
+          highlightedIndex: state.highlightedIndex,
+          inputValue: '',
+        };
+      default:
+        return changes;
       }
     },
     onSelectedItemChange: ({ selectedItem }) => {
@@ -130,25 +134,26 @@ const TagSelect: React.FC = () => {
     (nativeEvent.preventDownshiftDefault = true);
 
   return (
-    <div style={{ paddingRight: '3px', position: 'relative' }}>
+    <div>
       <button
         {...getToggleButtonProps({
           onClick: (event) => {
             // Anonymous user
-            if (!isAuthenticated) {
+            if (!userName) {
               disableDownshiftMenuToggle(event);
             }
           },
           onKeyDown: (event) => {
-            if (!isAuthenticated) {
+            if (!userName) {
               disableDownshiftMenuToggle(event);
             }
           },
         })}
         aria-label="toggle tag menu"
-        className={!isAuthenticated ? 'btn btn-primary logged-out-modal-trigger' : 'btn btn-primary'}
+        className={!userName ? 'btn btn-success logged-out-modal-trigger' : 'btn btn-success'}
       >
-        Tags <span className="caret"></span>
+        <i className="fa fa-tags" />
+        &nbsp;Tags <span className="caret" />
       </button>
 
       <div
@@ -192,7 +197,7 @@ const TagSelect: React.FC = () => {
         </a>
         <div
           style={{
-            overflowY: isOpen ? 'scroll' : 'hidden',
+            overflowY: isOpen ? 'auto' : 'hidden',
             maxHeight: '500px',
           }}
         >
@@ -237,6 +242,7 @@ const TagSelect: React.FC = () => {
                         <ListItem
                           isSelected={!!associations.find((a) => a.tag === tag.id)}
                           key={virtualRow.index}
+                          user={userName}
                           {...tag}
                         />
                       )}
